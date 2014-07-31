@@ -2,6 +2,7 @@ package fipple
 
 import (
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"strings"
 	"testing"
@@ -14,9 +15,13 @@ type Recorder struct {
 }
 
 func NewRecorder(t *testing.T, baseURL string) *Recorder {
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	return &Recorder{
 		t:       t,
-		client:  &http.Client{},
+		client:  &http.Client{Jar: jar},
 		baseURL: baseURL,
 	}
 }
@@ -96,4 +101,12 @@ func (r *Recorder) Put(path string, data map[string]string) *Response {
 func (r *Recorder) Delete(path string) *Response {
 	req := r.newRequest("DELETE", path)
 	return r.Do(req)
+}
+
+func (r *Recorder) GetCookies() []*http.Cookie {
+	fullURL, err := url.Parse(r.baseURL)
+	if err != nil {
+		r.t.Fatal(err)
+	}
+	return r.client.Jar.Cookies(fullURL)
 }
