@@ -75,7 +75,7 @@ func (r *Recorder) Do(req *http.Request) *Response {
 // a fipple.Response. You can run methods on the response
 // to check the results.
 func (r *Recorder) Get(path string) *Response {
-	req := r.newRequest("GET", path)
+	req := r.NewRequest("GET", path)
 	return r.Do(req)
 }
 
@@ -83,7 +83,7 @@ func (r *Recorder) Get(path string) *Response {
 // parameters and records the results into a fipple.Response. You
 // can run methods on the response to check the results.
 func (r *Recorder) Post(path string, data map[string]string) *Response {
-	req := r.newRequestWithData("POST", path, data)
+	req := r.NewRequestWithData("POST", path, data)
 	return r.Do(req)
 }
 
@@ -91,7 +91,7 @@ func (r *Recorder) Post(path string, data map[string]string) *Response {
 // parameters and records the results into a fipple.Response. You
 // can run methods on the response to check the results.
 func (r *Recorder) Put(path string, data map[string]string) *Response {
-	req := r.newRequestWithData("PUT", path, data)
+	req := r.NewRequestWithData("PUT", path, data)
 	return r.Do(req)
 }
 
@@ -99,7 +99,7 @@ func (r *Recorder) Put(path string, data map[string]string) *Response {
 // into a fipple.Response. You can run methods on the response to check the
 // results.
 func (r *Recorder) Delete(path string) *Response {
-	req := r.newRequest("DELETE", path)
+	req := r.NewRequest("DELETE", path)
 	return r.Do(req)
 }
 
