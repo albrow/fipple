@@ -33,7 +33,7 @@ func (r *Recorder) newResponse(resp *http.Response) *Response {
 	}
 }
 
-func (r *Recorder) newRequest(method string, path string) *http.Request {
+func (r *Recorder) NewRequest(method string, path string) *http.Request {
 	fullURL := r.baseURL + path
 	req, err := http.NewRequest(method, fullURL, nil)
 	if err != nil {
@@ -42,7 +42,7 @@ func (r *Recorder) newRequest(method string, path string) *http.Request {
 	return req
 }
 
-func (r *Recorder) newRequestWithData(method string, path string, data map[string]string) *http.Request {
+func (r *Recorder) NewRequestWithData(method string, path string, data map[string]string) *http.Request {
 	fullURL := r.baseURL + path
 	v := url.Values{}
 	for key, value := range data {
