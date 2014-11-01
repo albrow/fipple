@@ -8,12 +8,16 @@ import (
 	"testing"
 )
 
+// Recorder may be used to record http responses
 type Recorder struct {
 	t       *testing.T
 	client  *http.Client
 	baseURL string
 }
 
+// NewRecorder creates a new recorder with the given baseURL.
+// t will be used to print out helpful error messages if any
+// assertions fail.
 func NewRecorder(t *testing.T, baseURL string) *Recorder {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
@@ -33,6 +37,11 @@ func (r *Recorder) newResponse(resp *http.Response) *Response {
 	}
 }
 
+// NewRequest creates a new request object with the given http
+// method and path. The path will be appended to the baseURL
+// for the recorder to create the full URL. You are free to
+// add additional parameters or headers to the request before
+// sending it.
 func (r *Recorder) NewRequest(method string, path string) *http.Request {
 	fullURL := r.baseURL + path
 	req, err := http.NewRequest(method, fullURL, nil)
@@ -42,6 +51,10 @@ func (r *Recorder) NewRequest(method string, path string) *http.Request {
 	return req
 }
 
+// NewRequestWithData can be used to easily send a request with
+// form data (encoded as application/x-www-form-urlencoded). The
+// path will be appended to the baseURL for the recorder to create
+// the full URL.
 func (r *Recorder) NewRequestWithData(method string, path string, data map[string]string) *http.Request {
 	fullURL := r.baseURL + path
 	v := url.Values{}
@@ -56,7 +69,7 @@ func (r *Recorder) NewRequestWithData(method string, path string, data map[strin
 	return req
 }
 
-// Get sends req and records the results into a fipple.Response.
+// Do sends req and records the results into a fipple.Response.
 // Note that because an http.Request should have already been created
 // with a full, valid url, the baseURL of the Recorder will not be prepended
 // to the url for req. You can run methods on the response to check
@@ -72,15 +85,17 @@ func (r *Recorder) Do(req *http.Request) *Response {
 }
 
 // Get sends a GET request to the given path and records the results into
-// a fipple.Response. You can run methods on the response
-// to check the results.
+// a fipple.Response. path will be appended to the baseURL for the recorder
+// to create the full URL. You can run methods on the response to check the
+// results.
 func (r *Recorder) Get(path string) *Response {
 	req := r.NewRequest("GET", path)
 	return r.Do(req)
 }
 
 // Post sends a POST request to the given path using the given data as post
-// parameters and records the results into a fipple.Response. You
+// parameters and records the results into a fipple.Response. path will be
+// appended to the baseURL for the recorder to create the full URL. You
 // can run methods on the response to check the results.
 func (r *Recorder) Post(path string, data map[string]string) *Response {
 	req := r.NewRequestWithData("POST", path, data)
@@ -88,21 +103,25 @@ func (r *Recorder) Post(path string, data map[string]string) *Response {
 }
 
 // Put sends a PUT request to the given path using the given data as
-// parameters and records the results into a fipple.Response. You
-// can run methods on the response to check the results.
+// parameters and records the results into a fipple.Response. path
+// will be appended to the baseURL for the recorder to create the
+// full URL. You can run methods on the response to check the results.
 func (r *Recorder) Put(path string, data map[string]string) *Response {
 	req := r.NewRequestWithData("PUT", path, data)
 	return r.Do(req)
 }
 
 // Delete sends a DELETE request to the given path and records the results
-// into a fipple.Response. You can run methods on the response to check the
+// into a fipple.Response. path will be appended to the baseURL for the recorder
+// to create the full URL. You can run methods on the response to check the
 // results.
 func (r *Recorder) Delete(path string) *Response {
 	req := r.NewRequest("DELETE", path)
 	return r.Do(req)
 }
 
+// GetCookies returns the raw cookies that have been set as a result
+// of any requests recorded by a Recorder.
 func (r *Recorder) GetCookies() []*http.Cookie {
 	fullURL, err := url.Parse(r.baseURL)
 	if err != nil {
