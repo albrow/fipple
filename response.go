@@ -17,9 +17,9 @@ type Response struct {
 	printed  bool
 }
 
-// ReadBody reads r.Response.Body into r.Body. If the content-type is json,
+// readBody reads r.Response.Body into r.Body. If the content-type is json,
 // the body is automatically indented.
-func (r *Response) ReadBody() {
+func (r *Response) readBody() {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r.Response.Body)
 	body := buf.String()
@@ -59,7 +59,7 @@ func (r *Response) PrintError() {
 	r.recorder.t.Errorf("%s request to %s failed. Response was: \n%s",
 		r.Request.Method,
 		r.Request.URL.Path,
-		r.ColorBody())
+		r.colorBody())
 }
 
 // PrintErrorOnce will only print the response if it has not already been printed.
@@ -72,8 +72,8 @@ func (r *Response) PrintErrorOnce() {
 	}
 }
 
-// ColorBody returns a colorized version of the response body.
+// colorBody returns a colorized version of the response body.
 // By default the color is dark grey-ish.
-func (r *Response) ColorBody() string {
+func (r *Response) colorBody() string {
 	return color.Sprintf("@{.}%s", r.Body)
 }

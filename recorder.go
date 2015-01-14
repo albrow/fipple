@@ -129,7 +129,7 @@ func (r *Recorder) Do(req *http.Request) *Response {
 		r.t.Fatal(err)
 	}
 	resp := r.newResponse(httpResp)
-	resp.ReadBody()
+	resp.readBody()
 	return resp
 }
 
