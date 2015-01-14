@@ -3,7 +3,7 @@ Fipple
 
 [![GoDoc](https://godoc.org/github.com/albrow/fipple?status.svg)](https://godoc.org/github.com/albrow/fipple)
 
-A testing utility for go which lets you easily record and test http responses from any url.
+A lightweight utility written in go that makes it easy to write integration tests for REST APIs.
 
 ### Installation
 
