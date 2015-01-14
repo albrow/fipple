@@ -6,6 +6,7 @@ import (
 	"github.com/wsxiaoys/terminal/color"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 // Response represents the response from an http request and has methods to
@@ -14,7 +15,7 @@ type Response struct {
 	*http.Response
 	Body     string
 	recorder *Recorder
-	printed  bool
+	once     sync.Once
 }
 
 // readBody reads r.Response.Body into r.Body. If the content-type is json,
@@ -66,10 +67,7 @@ func (r *Response) PrintError() {
 // Useful in cases where there are multiple assertions called on the same response and
 // we don't want to repeatedly print out the response for each assertion failure.
 func (r *Response) PrintErrorOnce() {
-	if !r.printed {
-		r.PrintError()
-		r.printed = true
-	}
+	r.once.Do(r.PrintError)
 }
 
 // colorBody returns a colorized version of the response body.
