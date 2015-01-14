@@ -55,7 +55,9 @@ func (r *Response) AssertBodyContains(str string) {
 	}
 }
 
-// PrintError prints some information about the response as a test error.
+// PrintError prints some information about the response via t.Errorf. This includes
+// a message about the method and path for the sent request, and the entire content
+// of the response body.
 func (r *Response) PrintError() {
 	body := r.Body
 	if Colorize {
@@ -69,7 +71,7 @@ func (r *Response) PrintError() {
 
 // PrintErrorOnce will only print the response if it has not already been printed.
 // Useful in cases where there are multiple assertions called on the same response and
-// we don't want to repeatedly print out the response for each assertion failure.
+// we don't want to repeatedly print out the response body for each assertion failure.
 func (r *Response) PrintErrorOnce() {
 	r.once.Do(r.PrintError)
 }
