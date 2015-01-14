@@ -60,13 +60,19 @@ func (r *Response) AssertBodyContains(str string) {
 // of the response body.
 func (r *Response) PrintError() {
 	body := r.Body
-	if Colorize {
-		body = r.colorBody()
+	if body == "" {
+		r.recorder.t.Errorf("%s request to %s failed. Response was empty.",
+			r.Request.Method,
+			r.Request.URL.Path)
+	} else {
+		if Colorize {
+			body = r.colorBody()
+		}
+		r.recorder.t.Errorf("%s request to %s failed. Response was: \n%s",
+			r.Request.Method,
+			r.Request.URL.Path,
+			body)
 	}
-	r.recorder.t.Errorf("%s request to %s failed. Response was: \n%s",
-		r.Request.Method,
-		r.Request.URL.Path,
-		body)
 }
 
 // PrintErrorOnce will only print the response if it has not already been printed.
