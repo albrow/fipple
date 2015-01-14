@@ -76,6 +76,10 @@ failed test:
 
 ![Example Failed Test Output](http://oi59.tinypic.com/rj37kk.jpg)
 
+If the response contains JSON, it will automatically be formatted for you. You can also turn the
+colorization off via the `Colorize` option. (With colorization off, the body of the response will
+be the same color as all other text, instead of dark grey-ish).
+
 ### Table-Driven Tests
 
 Fipple works great for table-driven tests. Let's say that you wanted to test validations for
