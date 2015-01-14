@@ -113,7 +113,7 @@ for _, test := range validationTests {
 }
 ```
 
-### Custom Or More Complicated Requests
+### More Complicated Requests
 
 Right out of the box, the `Recorder` object supports the GET, POST, PUT, and DELETE methods.
 If you need to test a different type of method, you can do so by constructing your own request
@@ -151,10 +151,7 @@ if err != nil {
 	t.Fatal(err)
 }
 userFiles := map[string]*fipple.File{
-	"profilePicture": &fipple.File{
-		Name:    "profile.png",
-		Content: profileImageFile,
-	},
+	"profilePicture": profileImageFile,
 }
 req := rec.NewMultipartRequest("POST", "users", userFields, userFiles)
 res := rec.Do(req)

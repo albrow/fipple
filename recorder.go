@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 )
@@ -16,13 +17,6 @@ type Recorder struct {
 	t       *testing.T
 	client  *http.Client
 	baseURL string
-}
-
-// File is a fipple representation of a file consisting only of a
-// filename and an io.Reader capable of reading the file contents
-type File struct {
-	Name    string
-	Content io.Reader
 }
 
 // NewRecorder creates a new recorder with the given baseURL.
@@ -83,7 +77,7 @@ func (r *Recorder) NewRequestWithData(method string, path string, data map[strin
 // a request with form data and/or files (encoded as multipart/form-data).
 // fields is a key-value map of basic string fields for the form data, and
 // files is a map of key to *fipple.File
-func (r *Recorder) NewMultipartRequest(method string, path string, fields map[string]string, files map[string]*File) *http.Request {
+func (r *Recorder) NewMultipartRequest(method string, path string, fields map[string]string, files map[string]*os.File) *http.Request {
 	fullURL := r.baseURL + path
 
 	// First, create a new multipart form writer.
@@ -99,11 +93,11 @@ func (r *Recorder) NewMultipartRequest(method string, path string, fields map[st
 
 	// Add the files to the form
 	for fieldname, file := range files {
-		fileWriter, err := form.CreateFormFile(fieldname, file.Name)
+		fileWriter, err := form.CreateFormFile(fieldname, file.Name())
 		if err != nil {
 			r.t.Fatal(err)
 		}
-		if _, err := io.Copy(fileWriter, file.Content); err != nil {
+		if _, err := io.Copy(fileWriter, file); err != nil {
 			r.t.Fatal(err)
 		}
 	}
