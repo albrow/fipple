@@ -14,6 +14,10 @@ import (
 	"testing"
 )
 
+// Colorize is used to determine whether or not to colorize the errors when
+// printing to the console using t.Error. The default is true.
+var Colorize = true
+
 // Recorder may be used to record http responses
 type Recorder struct {
 	t       *testing.T

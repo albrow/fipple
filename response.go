@@ -57,10 +57,14 @@ func (r *Response) AssertBodyContains(str string) {
 
 // PrintError prints some information about the response as a test error.
 func (r *Response) PrintError() {
+	body := r.Body
+	if Colorize {
+		body = r.colorBody()
+	}
 	r.recorder.t.Errorf("%s request to %s failed. Response was: \n%s",
 		r.Request.Method,
 		r.Request.URL.Path,
-		r.colorBody())
+		body)
 }
 
 // PrintErrorOnce will only print the response if it has not already been printed.
