@@ -1,3 +1,5 @@
+// Package fipple is a testing utility which lets you easily record and test http responses from any url.
+// It works great for integration testing REST APIs.
 package fipple
 
 import (
