@@ -50,7 +50,7 @@ func (r *Response) AssertCode(code int) {
 func (r *Response) AssertBodyContains(str string) {
 	if !strings.Contains(r.Body, str) {
 		r.PrintErrorOnce()
-		r.recorder.t.Errorf("Expected response to contain \"%s\" but it did not.", str)
+		r.recorder.t.Errorf("Expected response to contain `%s` but it did not.", str)
 	}
 }
 
