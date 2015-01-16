@@ -154,7 +154,7 @@ profileImageFile, err := os.Open("images/profile.png")
 if err != nil {
 	t.Fatal(err)
 }
-userFiles := map[string]*fipple.File{
+userFiles := map[string]*os.File{
 	"profilePicture": profileImageFile,
 }
 req := rec.NewMultipartRequest("POST", "users", userFields, userFiles)
