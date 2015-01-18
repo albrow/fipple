@@ -4,6 +4,7 @@ package fipple
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -64,7 +65,8 @@ func (r *Recorder) NewRequest(method string, path string) *http.Request {
 // NewRequestWithData can be used to easily send a request with
 // form data (encoded as application/x-www-form-urlencoded). The
 // path will be appended to the baseURL for the recorder to create
-// the full URL. Any errors tha occur will be passed to t.Fatal.
+// the full URL. The Content-Type header will automatically be added.
+// Any errors tha occur will be passed to t.Fatal.
 func (r *Recorder) NewRequestWithData(method string, path string, data map[string]string) *http.Request {
 	fullURL := r.baseURL + path
 	v := url.Values{}
@@ -82,7 +84,8 @@ func (r *Recorder) NewRequestWithData(method string, path string, data map[strin
 // NewMultipartRequest can be used to easily create (and later send)
 // a request with form data and/or files (encoded as multipart/form-data).
 // fields is a key-value map of basic string fields for the form data, and
-// files is a map of key to *fipple.File
+// files is a map of key to *os.File. The Content-Type header will
+// automatically be added. Any errors tha occur will be passed to t.Fatal.
 func (r *Recorder) NewMultipartRequest(method string, path string, fields map[string]string, files map[string]*os.File) *http.Request {
 	fullURL := r.baseURL + path
 
@@ -119,6 +122,29 @@ func (r *Recorder) NewMultipartRequest(method string, path string, fields map[st
 		r.t.Fatal(err)
 	}
 	req.Header.Add("Content-Type", "multipart/form-data; boundary="+form.Boundary())
+	return req
+}
+
+// NewJSONRequest creates and returns a JSON request with the given
+// method and path (which is appended to the baseURL. data can be any
+// data structure but cannot include functions or recursiveness. NewJSONRequest
+// will convert data into json using json.Marshall. The Content-Type header
+// will automatically be added. Any errors tha occur will be passed to t.Fatal.
+func (r *Recorder) NewJSONRequest(method string, path string, data interface{}) *http.Request {
+	// Create and write to the body
+	body := bytes.NewBuffer([]byte{})
+	encoder := json.NewEncoder(body)
+	if err := encoder.Encode(data); err != nil {
+		r.t.Fatal(err)
+	}
+
+	// Create and return the request object
+	fullURL := r.baseURL + path
+	req, err := http.NewRequest(method, fullURL, body)
+	if err != nil {
+		r.t.Fatal(err)
+	}
+	req.Header.Add("Content-Type", "application/json")
 	return req
 }
 
