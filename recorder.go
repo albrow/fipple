@@ -28,7 +28,7 @@ type Recorder struct {
 
 // NewRecorder creates a new recorder with the given baseURL.
 // t will be used to print out helpful error messages if any
-// assertions fail.
+// expectations fail.
 func NewRecorder(t *testing.T, baseURL string) *Recorder {
 	jar, err := cookiejar.New(nil)
 	if err != nil {

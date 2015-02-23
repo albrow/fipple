@@ -56,21 +56,21 @@ Note that there's no need to write error handling yourself. Since `rec` has a `*
 it'll report errors automatically with `t.Error`.
 
 We can then use the `Response` object to make sure the response from our server was correct.
-Typically this means using the `AssertOk` (or `AssertCode` if you expect a code other than 200)
-and `AssertBodyContains` methods. `AssertBodyContains` will check the body of the response for
+Typically this means using the `ExpectOk` (or `ExpectCode` if you expect a code other than 200)
+and `ExpectBodyContains` methods. `ExpectBodyContains` will check the body of the response for
 the provided string. If the body does not contain that string, it reports an error via `t.Error`.
 
 In our example, we expect the response code to be 200 (i.e. Ok) and the body of the response to
 contain the user we just created, encoded as JSON. Here's how we could do that:
 
 ```go
-res.AssertOk()
-res.AssertBodyContains(`"user": `)
-res.AssertBodyContains(`"email": "foo@example.com"`)
-res.AssertBodyContains(`"name": "Mr. Foo Bar"`)
+res.ExpectOk()
+res.ExpectBodyContains(`"user": `)
+res.ExpectBodyContains(`"email": "foo@example.com"`)
+res.ExpectBodyContains(`"name": "Mr. Foo Bar"`)
 ```
 
-If any of the assertions failed, fipple will print out a nice summary of the request, including
+If any of the expectations failed, fipple will print out a nice summary of the request, including
 the actual body of the response, and a list of what went wrong. Here's an example output for a
 failed test:
 
@@ -112,8 +112,8 @@ validationTests := []struct {
 }
 for _, test := range validationTests {
 	res := rec.Post("users", test.data)
-	res.AssertCode(422)
-	res.AssertBodyContains(test.expectedMessage)
+	res.ExpectCode(422)
+	res.ExpectBodyContains(test.expectedMessage)
 }
 ```
 
@@ -126,8 +126,8 @@ and then using the `Do` method of the `Recorder`. Here's an example:
 ```go
 req := rec.NewRequest("BREW", "coffees/french_roast")
 res := rec.Do(req)
-res.AssertCode(418)
-res.AssertBodyContains("I am a teapot!")
+res.ExpectCode(418)
+res.ExpectBodyContains("I am a teapot!")
 ```
 
 Since NewRequest returns a vanilla `*http.Request` object, you can also use it to add custom
@@ -138,7 +138,7 @@ token to the request before sending it.
 req := rec.NewRequest("DELETE", "users/" + userId)
 req.Header.Add("AUTHORIZATION", "Bearer " + authToken)
 res := rec.Do(req)
-res.AssertOk()
+res.ExpectOk()
 ```
 
 Finally, fipple also supports multipart requests (with file uploads!) via the `NewMultipartRequest`
@@ -159,7 +159,7 @@ userFiles := map[string]*os.File{
 }
 req := rec.NewMultipartRequest("POST", "users", userFields, userFiles)
 res := rec.Do(req)
-res.AssertOk()
+res.ExpectOk()
 ```
 
 [Full documentation](http://godoc.org/github.com/albrow/fipple) is available on godoc.org.

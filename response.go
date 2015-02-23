@@ -31,22 +31,22 @@ func (r *Response) readBody() {
 	}
 }
 
-// AssertOk causes a test error if response code != 200
-func (r *Response) AssertOk() {
-	r.AssertCode(200)
+// ExpectOk causes a test error if response code != 200
+func (r *Response) ExpectOk() {
+	r.ExpectCode(200)
 }
 
-// AssertCode causes a test error if response code != the given code
-func (r *Response) AssertCode(code int) {
+// ExpectCode causes a test error if response code != the given code
+func (r *Response) ExpectCode(code int) {
 	if r.StatusCode != code {
 		r.PrintErrorOnce()
 		r.recorder.t.Errorf("Expected response code %d but got: %d", code, r.StatusCode)
 	}
 }
 
-// AssertBodyContains causes a test error if the response body does
+// ExpectBodyContains causes a test error if the response body does
 // not contain the given string.
-func (r *Response) AssertBodyContains(str string) {
+func (r *Response) ExpectBodyContains(str string) {
 	if !strings.Contains(string(r.Body), str) {
 		r.PrintErrorOnce()
 		r.recorder.t.Errorf("Expected response to contain `%s` but it did not.", str)
@@ -74,8 +74,8 @@ func (r *Response) PrintError() {
 }
 
 // PrintErrorOnce will only print the response if it has not already been printed.
-// Useful in cases where there are multiple assertions called on the same response and
-// we don't want to repeatedly print out the response body for each assertion failure.
+// Useful in cases where there are multiple Expect* methods called on the same response and
+// we don't want to repeatedly print out the response body for each expection failure.
 func (r *Response) PrintErrorOnce() {
 	r.once.Do(r.PrintError)
 }
