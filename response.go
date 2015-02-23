@@ -13,7 +13,7 @@ import (
 // make testing easier.
 type Response struct {
 	*http.Response
-	Body     string
+	Body     []byte
 	recorder *Recorder
 	once     sync.Once
 }
@@ -21,16 +21,14 @@ type Response struct {
 // readBody reads r.Response.Body into r.Body. If the content-type is json,
 // the body is automatically indented.
 func (r *Response) readBody() {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(r.Response.Body)
-	body := buf.String()
 	// Detect Content-Type and auto-indent if json
 	if strings.Contains(r.Header.Get("Content-Type"), "application/json") {
-		indBuf := new(bytes.Buffer)
-		json.Indent(indBuf, []byte(body), "", "\t")
-		body = indBuf.String()
+		buf := bytes.NewBuffer(r.Body)
+		json.Indent(buf, r.Body, "", "\t")
+	} else {
+		buf := bytes.NewBuffer(r.Body)
+		buf.ReadFrom(r.Response.Body)
 	}
-	r.Body = body
 }
 
 // AssertOk causes a test error if response code != 200
@@ -49,7 +47,7 @@ func (r *Response) AssertCode(code int) {
 // AssertBodyContains causes a test error if the response body does
 // not contain the given string.
 func (r *Response) AssertBodyContains(str string) {
-	if !strings.Contains(r.Body, str) {
+	if !strings.Contains(string(r.Body), str) {
 		r.PrintErrorOnce()
 		r.recorder.t.Errorf("Expected response to contain `%s` but it did not.", str)
 	}
@@ -59,7 +57,7 @@ func (r *Response) AssertBodyContains(str string) {
 // a message about the method and path for the sent request, and the entire content
 // of the response body.
 func (r *Response) PrintError() {
-	body := r.Body
+	body := string(r.Body)
 	if body == "" {
 		r.recorder.t.Errorf("%s request to %s failed. Response was empty.",
 			r.Request.Method,
@@ -85,5 +83,5 @@ func (r *Response) PrintErrorOnce() {
 // colorBody returns a colorized version of the response body.
 // By default the color is dark grey-ish.
 func (r *Response) colorBody() string {
-	return color.Sprintf("@{.}%s", r.Body)
+	return color.Sprintf("@{.}%s", string(r.Body))
 }
