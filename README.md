@@ -163,3 +163,9 @@ res.ExpectOk()
 ```
 
 [Full documentation](http://godoc.org/github.com/albrow/fipple) is available on godoc.org.
+
+
+License
+-------
+
+Fipple is licensed under the MIT License. See the LICENSE file for more information.
