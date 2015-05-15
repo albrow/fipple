@@ -7,10 +7,12 @@ package fipple
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/wsxiaoys/terminal/color"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/wsxiaoys/terminal/color"
 )
 
 // Response represents the response from an http request and has methods to
@@ -25,14 +27,14 @@ type Response struct {
 // readBody reads r.Response.Body into r.Body. If the content-type is json,
 // the body is automatically indented.
 func (r *Response) readBody() {
-	// Detect Content-Type and auto-indent if json
+	buf := bytes.NewBuffer(r.Body)
 	if strings.Contains(r.Header.Get("Content-Type"), "application/json") {
-		buf := bytes.NewBuffer(r.Body)
-		json.Indent(buf, r.Body, "", "\t")
+		body, _ := ioutil.ReadAll(r.Response.Body)
+		json.Indent(buf, body, "", "\t")
 	} else {
-		buf := bytes.NewBuffer(r.Body)
 		buf.ReadFrom(r.Response.Body)
 	}
+	r.Body = buf.Bytes()
 }
 
 // ExpectOk causes a test error if response code != 200
