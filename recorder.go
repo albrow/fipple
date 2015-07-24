@@ -13,38 +13,58 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/cookiejar"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
 )
 
-// Colorize is used to determine whether or not to colorize the errors when
-// printing to the console using t.Error. The default is true.
-var Colorize = true
-
-// Recorder may be used to record http responses
+// Recorder can be used to send http requests and record the responses.
 type Recorder struct {
 	t       *testing.T
 	client  *http.Client
 	baseURL string
+	server  *httptest.Server
+	// Colorize is used to determine whether or not to colorize the errors when
+	// printing to the console using t.Error. The default is true.
+	Colorize bool
 }
 
-// NewRecorder creates a new recorder with the given baseURL.
-// t will be used to print out helpful error messages if any
-// expectations fail.
-func NewRecorder(t *testing.T, baseURL string) *Recorder {
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+// NewRecorder returns a recorder that sends requests through the given handler.
+// The recorder will report any errors using t.Error or t.Fatal.
+func NewRecorder(t *testing.T, handler http.Handler) *Recorder {
+	server := httptest.NewServer(handler)
 	return &Recorder{
-		t:       t,
-		client:  &http.Client{Jar: jar},
-		baseURL: baseURL,
+		t:        t,
+		client:   newTestClient(t),
+		baseURL:  server.URL,
+		server:   server,
+		Colorize: true,
 	}
 }
 
+// NewURLRecorder creates a new recorder with the given baseURL. The recorder
+// will report any errors using t.Error or t.Fatal.
+func NewURLRecorder(t *testing.T, baseURL string) *Recorder {
+	return &Recorder{
+		t:        t,
+		client:   newTestClient(t),
+		baseURL:  baseURL,
+		Colorize: true,
+	}
+}
+
+// Close closes the recorder. You must call Close when you are done using a
+// recorder.
+func (r *Recorder) Close() {
+	if r.server != nil {
+		r.server.Close()
+	}
+}
+
+// newResponse creates and returns a *fipple.Response, which is a lightweight
+// wrapper around an *http.Response.
 func (r *Recorder) newResponse(resp *http.Response) *Response {
 	return &Response{
 		Response: resp,
@@ -52,11 +72,20 @@ func (r *Recorder) newResponse(resp *http.Response) *Response {
 	}
 }
 
-// NewRequest creates a new request object with the given http
-// method and path. The path will be appended to the baseURL
-// for the recorder to create the full URL. You are free to
-// add additional parameters or headers to the request before
-// sending it. Any errors that occur will be passed to t.Fatal.
+// newTestClient returns an *http.Client with a cookiejar which can be used to
+// store and retrieve cookies.
+func newTestClient(t *testing.T) *http.Client {
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return &http.Client{Jar: jar}
+}
+
+// NewRequest creates a new request object with the given http method and path.
+// The path will be appended to the baseURL for the recorder to create the full
+// URL. You are free to add additional parameters or headers to the request
+// before sending it. Any errors that occur will be passed to t.Fatal.
 func (r *Recorder) NewRequest(method string, path string) *http.Request {
 	fullURL := r.baseURL + path
 	req, err := http.NewRequest(method, fullURL, nil)
@@ -66,11 +95,10 @@ func (r *Recorder) NewRequest(method string, path string) *http.Request {
 	return req
 }
 
-// NewRequestWithData can be used to easily send a request with
-// form data (encoded as application/x-www-form-urlencoded). The
-// path will be appended to the baseURL for the recorder to create
-// the full URL. The Content-Type header will automatically be added.
-// Any errors tha occur will be passed to t.Fatal.
+// NewRequestWithData can be used to easily send a request with form data
+// (encoded as application/x-www-form-urlencoded). The path will be appended to
+// the baseURL for the recorder to create the full URL. The Content-Type header
+// will automatically be added. Any errors tha occur will be passed to t.Fatal.
 func (r *Recorder) NewRequestWithData(method string, path string, data map[string]string) *http.Request {
 	fullURL := r.baseURL + path
 	v := url.Values{}

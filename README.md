@@ -27,14 +27,12 @@ providing convenient methods for checking the response.
 
 Start with the `Recorder` object, which you can use to create and send http
 requests and record the response. The `Recorder` will use a `*testing.T` to
-report errors in a very readable format. The second argument is the base url
-which will be prepended to the path in any requests you make with the recorder.
+report errors in a very readable format.
 
-Fipple works great with the
-[net/http/httptest](http://golang.org/pkg/net/http/httptest) package. All you
-have to do is start a new `httptest.Server` and create a recorder that points to
-the test server URL. Here's an example of how to use fipple with httptest and
-the [martini web framework](https://github.com/go-martini/martini).
+The second argument to `fipple.NewRecorder` is an `http.Handler`. The recorder
+will route all requests through the the given handler. Here's an example of how
+to use fipple with httptest and the
+[martini web framework](https://github.com/go-martini/martini).
 
 ```go
 func TestUsersCreate(t *testing.T) {
@@ -44,28 +42,28 @@ func TestUsersCreate(t *testing.T) {
 	m.Get("/", func() string {
 		return "Hello world!"
 	})
-	// Start a test server on a random port using the martini instance we just
-	// created. Requests will be routed to your handlers.
-	server := httptest.NewServer(m)
-	// Start a new recorder using the url and port of the test server.
-	rec := fipple.NewRecorder(t, server.URL)
+	// Create a new recorder using the martini instance. Requests sent using the
+	// recorder will be sent through the martini instance.
+	rec := fipple.NewRecorder(t, m)
 }
 ```
 
 We used martini in the above example, but other popular web frameworks such as
 [gin](https://github.com/gin-gonic/gin) or
 [negroni](https://github.com/codegangsta/negroni) would work just as well.
-You can create a `httptest.Server` with anything that implements `http.Handler`.
+You can create a recorder with anything that implements
+[`http.Handler`](http://golang.org/pkg/net/http/#Handler).
 
 If you're using a web framework that does not expose an `http.Handler`, don't
 fret! You can still use fipple by starting a server in a separate process and
-then running your tests. So, for example if you started your server in a
-separate process listening on port 4000, here's how you would create a recorder:
+then using `fipple.NewURLRecorder` to create the recorder. So, for example if
+you started your server in a separate process listening on port 4000, here's how
+you would create a recorder:
 
 ```go
 func TestUsersCreate(t *testing.T) {
 	// Create a recorder that points to our already running server on port 4000.
-	rec := fipple.NewRecorder(t, "http://localhost:4000")
+	rec := fipple.NewURLRecorder(t, "http://localhost:4000")
 }
 ```
 

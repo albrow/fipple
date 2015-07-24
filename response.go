@@ -45,7 +45,7 @@ func (r *Response) ExpectOk() {
 // ExpectCode causes a test error if response code != the given code
 func (r *Response) ExpectCode(code int) {
 	if r.StatusCode != code {
-		r.PrintErrorOnce()
+		r.PrintFailureOnce()
 		r.recorder.t.Errorf("Expected response code %d but got: %d", code, r.StatusCode)
 	}
 }
@@ -54,22 +54,22 @@ func (r *Response) ExpectCode(code int) {
 // not contain the given string.
 func (r *Response) ExpectBodyContains(str string) {
 	if !strings.Contains(string(r.Body), str) {
-		r.PrintErrorOnce()
+		r.PrintFailureOnce()
 		r.recorder.t.Errorf("Expected response to contain `%s` but it did not.", str)
 	}
 }
 
-// PrintError prints some information about the response via t.Errorf. This includes
-// a message about the method and path for the sent request, and the entire content
-// of the response body.
-func (r *Response) PrintError() {
+// PrintFailure prints some information about the response via t.Errorf. This
+// includes the method, the url, and the response body. If the Content-Type of
+// the response is application/json, PrintFailure will automatically indent it.
+func (r *Response) PrintFailure() {
 	body := string(r.Body)
 	if body == "" {
 		r.recorder.t.Errorf("%s request to %s failed. Response was empty.",
 			r.Request.Method,
 			r.Request.URL.Path)
 	} else {
-		if Colorize {
+		if r.recorder.Colorize {
 			body = r.colorBody()
 		}
 		r.recorder.t.Errorf("%s request to %s failed. Response was: \n%s",
@@ -79,11 +79,10 @@ func (r *Response) PrintError() {
 	}
 }
 
-// PrintErrorOnce will only print the response if it has not already been printed.
-// Useful in cases where there are multiple Expect* methods called on the same response and
-// we don't want to repeatedly print out the response body for each expection failure.
-func (r *Response) PrintErrorOnce() {
-	r.once.Do(r.PrintError)
+// PrintFailureOnce is like PrintFailure but only prints out the information
+// once per response, regardless of how many times it is called.
+func (r *Response) PrintFailureOnce() {
+	r.once.Do(r.PrintFailure)
 }
 
 // colorBody returns a colorized version of the response body.
