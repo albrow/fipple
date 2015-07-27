@@ -37,6 +37,11 @@ func (r *Response) readBody() {
 	r.Body = buf.Bytes()
 }
 
+// Unmarshal unmarshals the response body into v.
+func (r *Response) Unmarshal(v interface{}) error {
+	return json.Unmarshal(r.Body, v)
+}
+
 // ExpectOk causes a test error if response code != 200
 func (r *Response) ExpectOk() {
 	r.ExpectCode(200)
